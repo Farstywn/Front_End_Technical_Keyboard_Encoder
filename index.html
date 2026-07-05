@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keyboard Transform Encoder</title>
+  <style>
+    /* 1. STYLING DASAR & RESET GLOBAL*/
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+    }
+
+    /* 2. TATA LETAK UTAMA (2 KOLOM - Z-PATTERN)*/
+    header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 14px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 868px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 3. KOMPONEN KARTU (CARD) & FORM INPUT*/
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: #ffffff;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: #0d9488;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+    }
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+    .field-hint {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 5px;
+    }
+    .file-input-wrapper {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .file-input-wrapper input[type="file"] {
+      font-size: 0.8rem;
+    }
+
+    /* 4. STYLING TOMBOL & UMPAN BALIK (ALERT & CHIPS)*/
+    .quick-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .btn-chip:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .btn-chip-danger {
+      color: #b91c1c;
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+    .btn-chip-danger:hover {
+      background: #fee2e2;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-primary {
+      background: #0d9488;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 22px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .btn-primary:hover {
+      background: #0f766e;
+    }
+    .btn-secondary {
+      background: #ffffff;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-secondary:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .btn-copy {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-copy.copied {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+    }
+    .alert {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      display: none;
+    }
+    .alert-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .alert-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
+    /* 5. KOTAK OUTPUT & VISUALISASI MATRIX KEYBOARD*/
+    .output-box {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 14px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.92rem;
+      min-height: 120px;
+      max-height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .kbd-section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .kbd-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .kbd-key {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      text-align: center;
+      padding: 7px 0;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      user-select: none;
+      transition: all 0.1s ease;
+      cursor: default;
+    }
+    .kbd-key.changed {
+      background: #ccfbf1;
+      border-color: #5eead4;
+      color: #0f766e;
+    }
+    .kbd-key.active-hover {
+      background: #fef08a !important;
+      border-color: #fde047 !important;
+      color: #854d0e !important;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .mapping-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+      gap: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .map-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 4px 2px;
+      text-align: center;
+      font-family: monospace;
+      font-size: 0.76rem;
+      color: #64748b;
+    }
+    .map-item b {
+      color: #0d9488;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Judul & Deskripsi Header -->
+  <header>
+    <h1>Keyboard Transform Encoder</h1>
+    <p class="subtitle">Aplikasi enkoding teks berbasis transformasi matriks keyboard QWERTY</p>
+  </header>
+
+  <!-- Layot Tata Letak 2 Kolom -->
+  <div class="grid-layout">
+    
+    <!-- Area Kiri: Input & Tombol Aksi -->
+    <div>
+      <!-- Kartu Input Parameter Transformasi -->
+      <div class="card">
+        <div class="card-title">
+          <span>1. Parameter Transformasi</span>
+        </div>
+        <div class="form-group">
+          <label for="tf">Urutan Kode Transformasi</label>
+          <input type="text" id="tf" placeholder="Contoh: H,V,H,5,V,-12" value="H,V,H,5,V,-12">
+          <p class="field-hint">Format: <b>H</b> (Flip H), <b>V</b> (Flip V), atau <b>Angka</b> (Shift kanan/kiri)</p>
+          
+          <!-- Tombol Cepat Penambahan Rule -->
+          <div class="quick-buttons">
+            <button class="btn-chip" onclick="addTransform('H')">+ Flip H</button>
+            <button class="btn-chip" onclick="addTransform('V')">+ Flip V</button>
+            <button class="btn-chip" onclick="addTransform('5')">+ Shift 5</button>
+            <button class="btn-chip" onclick="addTransform('-5')">+ Shift -5</button>
+            <button class="btn-chip" onclick="addTransform('1')">+ Shift 1</button>
+            <button class="btn-chip btn-chip-danger" onclick="clearTransform()">Reset Rule</button>
+          </div>
+          
+          <div class="file-input-wrapper">
+            <span>Atau dari file:</span>
+            <input type="file" id="tf_file" accept=".txt">
+          </div>
+        </div>
+      </div>
+
+      <!-- Kartu Input Teks Asli -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. Teks Input</span>
+        </div>
+        <div class="form-group">
+          <label for="txt">Teks Asli</label>
+          <textarea id="txt" placeholder="Ketik atau paste teks yang ingin dienkode di sini...">hello world</textarea>
+          <div class="file-input-wrapper">
+            <span>Atau dari file:</span>
+            <input type="file" id="txt_file" accept=".txt">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" onclick="doEncode()">Enkode Teks</button>
+          <button class="btn-secondary" onclick="doResetAll()">Reset Semua</button>
+        </div>
+        
+        <!-- Pesan Alert Status -->
+        <div id="alertBox" class="alert"></div>
+      </div>
+    </div>
+
+    <!-- Area Kanan: Hasil Enkoding & Visualisasi Matriks -->
+    <div>
+      <!-- Kartu Tampilan Hasil -->
+      <div class="card">
+        <div class="card-title">
+          <span>Hasil Enkoding</span>
+          <button class="btn-copy" id="copyBtn" onclick="doCopy()">Salin</button>
+        </div>
+        <div class="output-box" id="out">— Hasil enkoding akan tampil di sini —</div>
+      </div>
+
+      <!-- Kartu Visualisasi Matriks Keyboard 4x10 -->
+      <div class="card">
+        <div class="card-title">Visualisasi Matrix Keyboard</div>
+        
+        <div class="kbd-section-title">Keyboard Asli</div>
+        <div class="kbd-grid" id="kb_orig"></div>
+
+        <div class="kbd-section-title">Setelah Transformasi</div>
+        <div class="kbd-grid" id="kb_new"></div>
+
+        <div class="kbd-section-title">Pemetaan Karakter</div>
+        <div class="mapping-grid" id="mapbox"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// 1. DATA MASTER KEYBOARD QWERTY (4 Baris x 10 Kolom)
+var KB = [
+  '1','2','3','4','5','6','7','8','9','0',
+  'q','w','e','r','t','y','u','i','o','p',
+  'a','s','d','f','g','h','j','k','l',';',
+  'z','x','c','v','b','n','m',',','.','/'
+];
+
+// 2. FUNGSI TRANSFORMASI MATRIKS KEYBOARD
+
+// Membalik setiap baris keyboard secara horizontal (posisi kiri ditukar ke kanan)
+function flipH(kb) {
+  var out = kb.slice();
+  for (var r = 0; r < 4; r++) {
+    var s = r * 10;
+    for (var c = 0; c < 5; c++) {
+      var tmp = out[s + c];
+      out[s + c] = out[s + 9 - c];
+      out[s + 9 - c] = tmp;
+    }
+  }
+  return out;
+}
+
+// Membalik setiap kolom keyboard secara vertikal (posisi atas ditukar ke bawah)
+function flipV(kb) {
+  var out = kb.slice();
+  for (var c = 0; c < 10; c++) {
+    var tmp0 = out[c]; out[c] = out[30 + c]; out[30 + c] = tmp0;
+    var tmp1 = out[10 + c]; out[10 + c] = out[20 + c]; out[20 + c] = tmp1;
+  }
+  return out;
+}
+
+// Pergeseran linier 40 tombol secara melingkar (sirkular) sebanyak n langkah
+function shiftKB(kb, n) {
+  var out = new Array(40);
+  var nn = ((n % 40) + 40) % 40;
+  for (var i = 0; i < 40; i++) {
+    out[(i + nn) % 40] = kb[i];
+  }
+  return out;
+}
+
+// Memproses dan mengeksekusi rantai perintah transformasi (misal: "H,V,5,-12")
+function transform(str) {
+  var kb = KB.slice();
+  if (!str || str.trim() === '') return kb;
+
+  var parts = str.split(',');
+  for (var i = 0; i < parts.length; i++) {
+    var t = parts[i].trim();
+    if (t === '') continue;
+    if (t.toUpperCase() === 'H') {
+      kb = flipH(kb);
+    } else if (t.toUpperCase() === 'V') {
+      kb = flipV(kb);
+    } else {
+      var num = parseInt(t, 10);
+      if (isNaN(num)) {
+        throw new Error('Karakter transformasi tidak valid: "' + t + '"');
+      }
+      kb = shiftKB(kb, num);
+    }
+  }
+  return kb;
+}
+
+// 3. FUNGSI HELPER & RENDERING TAMPILAN
+
+// Mencegah kerentanan XSS saat memasukkan karakter khusus ke dalam HTML
+function escapeHtml(ch) {
+  if (ch === '&') return '&amp;';
+  if (ch === '<') return '&lt;';
+  if (ch === '>') return '&gt;';
+  return ch;
+}
+
+// Menambahkan perintah transformasi baru via Quick Button
+function addTransform(val) {
+  var input = document.getElementById('tf');
+  var current = input.value.trim();
+  if (current === '') {
+    input.value = val;
+  } else {
+    input.value = current + ',' + val;
+  }
+  doEncode();
+}
+
+// Membersihkan kolom input transformasi
+function clearTransform() {
+  document.getElementById('tf').value = '';
+  doEncode();
+}
+
+// Tampilkan pesan umpan balik (alert sukses / gagal)
+function showAlert(msg, isError) {
+  var box = document.getElementById('alertBox');
+  box.textContent = msg;
+  box.className = isError ? 'alert alert-error' : 'alert alert-success';
+  box.style.display = 'block';
+}
+
+// Menyembunyikan kotak alert
+function hideAlert() {
+  var box = document.getElementById('alertBox');
+  box.style.display = 'none';
+}
+
+// Memberikan highlight interaktif pada pasangan tombol saat kursor disorot (hover)
+function highlightPair(idx, state) {
+  var origEls = document.querySelectorAll('#kb_orig .kbd-key');
+  var newEls = document.querySelectorAll('#kb_new .kbd-key');
+  if (origEls[idx] && newEls[idx]) {
+    if (state) {
+      origEls[idx].classList.add('active-hover');
+      newEls[idx].classList.add('active-hover');
+    } else {
+      origEls[idx].classList.remove('active-hover');
+      newEls[idx].classList.remove('active-hover');
+    }
+  }
+}
+
+// Merender elemen visualisasi grid 4x10 untuk keyboard asli & hasil
+function renderKB(containerId, keys, isResult) {
+  var html = '';
+  for (var i = 0; i < 40; i++) {
+    var isDiff = isResult && (keys[i] !== KB[i]);
+    var cls = isDiff ? 'kbd-key changed' : 'kbd-key';
+    html += '<div class="' + cls + '" onmouseenter="highlightPair(' + i + ', true)" onmouseleave="highlightPair(' + i + ', false)">' + escapeHtml(keys[i]) + '</div>';
+  }
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// Merender tabel daftar pemetaan karakter asli -> karakter hasil
+function renderMapping(newKB) {
+  var html = '';
+  for (var i = 0; i < 40; i++) {
+    html += '<div class="map-item">' + escapeHtml(KB[i]) + ' &rarr; <b>' + escapeHtml(newKB[i]) + '</b></div>';
+  }
+  document.getElementById('mapbox').innerHTML = html;
+}
+
+// 4. PENANGAN PENGEKSEKUSIAN AKSI (ENCODE, RESET, COPY)
+
+// Mengenkode teks input berdasarkan matriks keyboard hasil transformasi
+function doEncode() {
+  hideAlert();
+  var tfStr = document.getElementById('tf').value;
+  var inputTxt = document.getElementById('txt').value;
+
+  try {
+    var newKB = transform(tfStr);
+
+    // Membuat objek pemetaan O(1)
+    var map = {};
+    for (var i = 0; i < 40; i++) {
+      map[KB[i]] = newKB[i];
+    }
+
+    // Melakukan enkoding karakter demi karakter
+    var result = '';
+    for (var i = 0; i < inputTxt.length; i++) {
+      var ch = inputTxt[i];
+      result += (map[ch] !== undefined) ? map[ch] : ch;
+    }
+
+    renderKB('kb_orig', KB, false);
+    renderKB('kb_new', newKB, true);
+    renderMapping(newKB);
+
+    document.getElementById('out').textContent = result;
+    showAlert('Enkoding berhasil (' + inputTxt.length + ' karakter diproses)', false);
+  } catch (err) {
+    showAlert(err.message, true);
+  }
+}
+
+// Mengembalikan seluruh formulir input ke kondisi default
+function doResetAll() {
+  document.getElementById('tf').value = 'H,V,H,5,V,-12';
+  document.getElementById('txt').value = 'hello world';
+  document.getElementById('tf_file').value = '';
+  document.getElementById('txt_file').value = '';
+  hideAlert();
+  doEncode();
+}
+
+// Menyalin teks hasil enkoding ke clipboard dengan balasan visual instan
+function doCopy() {
+  var outText = document.getElementById('out').textContent;
+  if (!outText || outText.indexOf('— Hasil enkoding') !== -1) return;
+
+  navigator.clipboard.writeText(outText).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = 'Tersalin!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Salin';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// 5. EVENT LISTENER UPLOAD FILE TXT
+
+// Listener file upload untuk kode transformasi
+document.getElementById('tf_file').addEventListener('change', function(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('tf').value = ev.target.result.trim();
+    doEncode();
+  };
+  reader.readAsText(f);
+});
+
+// Listener file upload untuk teks asli yang ingin dienkode
+document.getElementById('txt_file').addEventListener('change', function(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('txt').value = ev.target.result;
+    doEncode();
+  };
+  reader.readAsText(f);
+});
+
+// Jalankan enkoding otomatis saat halaman selesai dimuat
+window.addEventListener('DOMContentLoaded', function() {
+  doEncode();
+});
+</script>
+
+</body>
+</html>
